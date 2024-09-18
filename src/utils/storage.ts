@@ -1,6 +1,6 @@
 export class Storage {
   // 设置数据，自动将对象转换为 JSON 字符串
-  static set(key, value) {
+  static set(key: string, value: unknown) {
     try {
       const data = JSON.stringify(value);
       localStorage.setItem(key, data);
@@ -10,7 +10,7 @@ export class Storage {
   }
 
   // 获取数据，自动将 JSON 字符串转换为对象
-  static get(key) {
+  static get(key: string) {
     try {
       const data = localStorage.getItem(key);
       return data ? JSON.parse(data) : null;
@@ -21,7 +21,7 @@ export class Storage {
   }
 
   // 删除某个 key 的数据
-  static remove(key) {
+  static remove(key: string) {
     try {
       localStorage.removeItem(key);
     } catch (error) {

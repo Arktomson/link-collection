@@ -1,13 +1,8 @@
+import LinkManagementSystem from './components/LinkManagementSystem';
+import { Storage } from './utils';
 function App() {
-  return (
-    <>
-      <div className="w-full h-full">Hello World</div>
-      <img
-        src="https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png"
-        alt=""
-      />
-    </>
-  );
+  const dataSource = Storage.get('dataSource');
+  return <LinkManagementSystem dataSource={dataSource} />;
 }
 
 export default App;
