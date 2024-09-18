@@ -222,60 +222,78 @@ const LinkManagementSystem: React.FC<LinkManagementSystemProps> = ({
   };
 
   const handleDeleteEngine = (id: number) => {
-    const updatedEngines = engines.filter((engine) => engine.id !== id);
-    const updatedProjects = projects.filter(
-      (project) => project.engineId !== id
-    );
-    const updatedPages = pages.filter(
-      (page) =>
-        !updatedProjects.some((project) => project.id === page.projectId)
-    );
-    const updatedScenes = scenes.filter(
-      (scene) => !updatedPages.some((page) => page.id === scene.pageId)
-    );
+    Modal.confirm({
+      title: '确认删除',
+      content: '确定要删除该仓库吗？',
+      onOk: () => {
+        const updatedEngines = engines.filter((engine) => engine.id !== id);
+        const updatedProjects = projects.filter(
+          (project) => project.engineId !== id
+        );
+        const updatedPages = pages.filter(
+          (page) =>
+            !updatedProjects.some((project) => project.id === page.projectId)
+        );
+        const updatedScenes = scenes.filter(
+          (scene) => !updatedPages.some((page) => page.id === scene.pageId)
+        );
 
-    setEngines(updatedEngines);
-    setProjects(updatedProjects);
-    setPages(updatedPages);
-    setScenes(updatedScenes);
+        setEngines(updatedEngines);
+        setProjects(updatedProjects);
+        setPages(updatedPages);
+        setScenes(updatedScenes);
 
-    Storage.set('engine', updatedEngines);
-    Storage.set('project', updatedProjects);
-    Storage.set('page', updatedPages);
-    Storage.set('scene', updatedScenes);
+        Storage.set('engine', updatedEngines);
+        Storage.set('project', updatedProjects);
+        Storage.set('page', updatedPages);
+        Storage.set('scene', updatedScenes);
 
-    message.success('仓库及其子元素删除成功');
+        message.success('仓库及其子元素删除成功');
+      },
+    });
   };
 
   const handleDeleteProject = (id: number) => {
-    const updatedProjects = projects.filter((project) => project.id !== id);
-    const updatedPages = pages.filter((page) => page.projectId !== id);
-    const updatedScenes = scenes.filter(
-      (scene) => !updatedPages.some((page) => page.id === scene.pageId)
-    );
+    Modal.confirm({
+      title: '确认删除',
+      content: '确定要删除该项目吗？',
+      onOk: () => {
+        const updatedProjects = projects.filter((project) => project.id !== id);
+        const updatedPages = pages.filter((page) => page.projectId !== id);
+        const updatedScenes = scenes.filter(
+          (scene) => !updatedPages.some((page) => page.id === scene.pageId)
+        );
 
-    setProjects(updatedProjects);
-    setPages(updatedPages);
-    setScenes(updatedScenes);
+        setProjects(updatedProjects);
+        setPages(updatedPages);
+        setScenes(updatedScenes);
 
-    Storage.set('project', updatedProjects);
-    Storage.set('page', updatedPages);
-    Storage.set('scene', updatedScenes);
+        Storage.set('project', updatedProjects);
+        Storage.set('page', updatedPages);
+        Storage.set('scene', updatedScenes);
 
-    message.success('项目及其子页面删除成功');
+        message.success('项目及其子页面删除成功');
+      },
+    });
   };
 
   const handleDeletePage = (id: number) => {
-    const updatedPages = pages.filter((page) => page.id !== id);
-    const updatedScenes = scenes.filter((scene) => scene.pageId !== id);
+    Modal.confirm({
+      title: '确认删除',
+      content: '确定要删除该页面吗？',
+      onOk: () => {
+        const updatedPages = pages.filter((page) => page.id !== id);
+        const updatedScenes = scenes.filter((scene) => scene.pageId !== id);
 
-    setPages(updatedPages);
-    setScenes(updatedScenes);
+        setPages(updatedPages);
+        setScenes(updatedScenes);
 
-    Storage.set('page', updatedPages);
-    Storage.set('scene', updatedScenes);
+        Storage.set('page', updatedPages);
+        Storage.set('scene', updatedScenes);
 
-    message.success('页面及其场景删除成功');
+        message.success('页面及其场景删除成功');
+      },
+    });
   };
 
   const filteredProjects = projects?.filter(
@@ -357,10 +375,16 @@ const LinkManagementSystem: React.FC<LinkManagementSystemProps> = ({
       });
   };
   const handleDeleteScene = (id: number) => {
-    const updatedScenes = scenes.filter((scene) => scene.id !== id);
-    setScenes(updatedScenes);
-    Storage.set('scene', updatedScenes);
-    message.success('场景删除成功');
+    Modal.confirm({
+      title: '确认删除',
+      content: '确定要删除该场景吗？',
+      onOk: () => {
+        const updatedScenes = scenes.filter((scene) => scene.id !== id);
+        setScenes(updatedScenes);
+        Storage.set('scene', updatedScenes);
+        message.success('场景删除成功');
+      },
+    });
   };
 
   return (
