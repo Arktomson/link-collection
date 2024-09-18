@@ -12,9 +12,9 @@ import {
 } from 'antd';
 import {
   CopyOutlined,
-  LinkOutlined,
   PlusOutlined,
   DeleteOutlined,
+  EditOutlined,
 } from '@ant-design/icons';
 import { Storage } from '../utils';
 
@@ -44,12 +44,14 @@ interface Scene {
   name: string;
   link: string;
 }
+
 interface LinkManagementSystemProps {
   engine: Engine[];
   project: Project[];
   page: Page[];
   scene: Scene[];
 }
+
 const LinkManagementSystem: React.FC<LinkManagementSystemProps> = ({
   engine,
   project,
@@ -60,7 +62,6 @@ const LinkManagementSystem: React.FC<LinkManagementSystemProps> = ({
   const [selectedProject, setSelectedProject] = useState<number | null>(null);
   const [selectedPage, setSelectedPage] = useState<number | null>(null);
 
-  // 从 localStorage 加载数据，如果没有则使用空数组
   const [engines, setEngines] = useState<Engine[]>(engine);
   const [projects, setProjects] = useState<Project[]>(project);
   const [pages, setPages] = useState<Page[]>(page);
@@ -69,6 +70,7 @@ const LinkManagementSystem: React.FC<LinkManagementSystemProps> = ({
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [modalType, setModalType] = useState<string | null>(null);
   const [form] = Form.useForm();
+  const [editItem, setEditItem] = useState<any>(null);
 
   useEffect(() => {
     // 在组件挂载时，如果有数据，选择第一个引擎、项目和页面
@@ -76,14 +78,12 @@ const LinkManagementSystem: React.FC<LinkManagementSystemProps> = ({
       const firstEngine = engines[0];
       setSelectedEngine(firstEngine.id);
 
-      // 查找该引擎下的第一个项目
       const firstProject = projects.find(
         (project) => project.engineId === firstEngine.id
       );
       if (firstProject) {
         setSelectedProject(firstProject.id);
 
-        // 查找该项目下的第一个页面
         const firstPage = pages.find(
           (page) => page.projectId === firstProject.id
         );
@@ -111,6 +111,7 @@ const LinkManagementSystem: React.FC<LinkManagementSystemProps> = ({
 
   const handleAddItem = (type: string, parentId: number | null = null) => {
     setModalType(type);
+    setEditItem(null);
     setIsModalVisible(true);
     if (type === 'scene' && parentId !== null) {
       form.setFieldsValue({ pageId: parentId });
@@ -119,56 +120,99 @@ const LinkManagementSystem: React.FC<LinkManagementSystemProps> = ({
     }
   };
 
+  const handleEditItem = (type: string, item: any) => {
+    setModalType(type);
+    setEditItem(item);
+    setIsModalVisible(true);
+    form.setFieldsValue({ name: item.name, link: item.link || '' });
+  };
+
   const handleModalOk = () => {
     form.validateFields().then((values) => {
-      switch (modalType) {
-        case 'engine':
-          const newEngine = { id: Date.now(), name: values.name };
-          const updatedEngines = [...engines, newEngine];
+      if (editItem) {
+        // 修改逻辑
+        if (modalType === 'engine') {
+          const updatedEngines = engines.map((engine) =>
+            engine.id === editItem.id
+              ? { ...engine, name: values.name }
+              : engine
+          );
           setEngines(updatedEngines);
-          Storage.set('engine', updatedEngines); // 更新 localStorage
-          break;
-        case 'project':
-          if (selectedEngine !== null) {
-            const newProject = {
-              id: Date.now(),
-              engineId: selectedEngine,
-              name: values.name,
-            };
-            const updatedProjects = [...projects, newProject];
-            setProjects(updatedProjects);
-            Storage.set('project', updatedProjects); // 更新 localStorage
-          }
-          break;
-        case 'page':
-          if (selectedProject !== null) {
-            const newPage = {
-              id: Date.now(),
-              projectId: selectedProject,
-              name: values.name,
-            };
-            const updatedPages = [...pages, newPage];
-            setPages(updatedPages);
-            Storage.set('page', updatedPages); // 更新 localStorage
-          }
-          break;
-        case 'scene':
-          if (values.pageId !== null) {
-            const newScene = {
-              id: Date.now(),
-              pageId: values.pageId,
-              name: values.name,
-              link: values.link,
-            };
-            const updatedScenes = [...scenes, newScene];
-            setScenes(updatedScenes);
-            Storage.set('scene', updatedScenes); // 更新 localStorage
-          }
-          break;
+          Storage.set('engine', updatedEngines);
+        } else if (modalType === 'project') {
+          const updatedProjects = projects.map((project) =>
+            project.id === editItem.id
+              ? { ...project, name: values.name }
+              : project
+          );
+          setProjects(updatedProjects);
+          Storage.set('project', updatedProjects);
+        } else if (modalType === 'page') {
+          const updatedPages = pages.map((page) =>
+            page.id === editItem.id ? { ...page, name: values.name } : page
+          );
+          setPages(updatedPages);
+          Storage.set('page', updatedPages);
+        } else if (modalType === 'scene') {
+          const updatedScenes = scenes.map((scene) =>
+            scene.id === editItem.id
+              ? { ...scene, name: values.name, link: values.link }
+              : scene
+          );
+          setScenes(updatedScenes);
+          Storage.set('scene', updatedScenes);
+        }
+      } else {
+        // 添加逻辑
+        switch (modalType) {
+          case 'engine':
+            const newEngine = { id: Date.now(), name: values.name };
+            const updatedEngines = [...engines, newEngine];
+            setEngines(updatedEngines);
+            Storage.set('engine', updatedEngines);
+            break;
+          case 'project':
+            if (selectedEngine !== null) {
+              const newProject = {
+                id: Date.now(),
+                engineId: selectedEngine,
+                name: values.name,
+              };
+              const updatedProjects = [...projects, newProject];
+              setProjects(updatedProjects);
+              Storage.set('project', updatedProjects);
+            }
+            break;
+          case 'page':
+            if (selectedProject !== null) {
+              const newPage = {
+                id: Date.now(),
+                projectId: selectedProject,
+                name: values.name,
+              };
+              const updatedPages = [...pages, newPage];
+              setPages(updatedPages);
+              Storage.set('page', updatedPages);
+            }
+            break;
+          case 'scene':
+            if (values.pageId !== null) {
+              const newScene = {
+                id: Date.now(),
+                pageId: values.pageId,
+                name: values.name,
+                link: values.link,
+              };
+              const updatedScenes = [...scenes, newScene];
+              setScenes(updatedScenes);
+              Storage.set('scene', updatedScenes);
+            }
+            break;
+        }
       }
       form.resetFields();
       setIsModalVisible(false);
-      message.success(`${modalType}添加成功`);
+      message.success(`${modalType}操作成功`);
     });
   };
 
@@ -177,22 +221,61 @@ const LinkManagementSystem: React.FC<LinkManagementSystemProps> = ({
     setIsModalVisible(false);
   };
 
-  const handleDeleteScene = (id: number) => {
-    Modal.confirm({
-      title: '确认删除',
-      content: '确定要删除该场景吗？',
-      onOk: () => {
-        const updatedScenes = scenes.filter((scene) => scene.id !== id);
-        setScenes(updatedScenes);
-        Storage.set('scene', updatedScenes); // 更新 localStorage
-      },
-    });
+  const handleDeleteEngine = (id: number) => {
+    const updatedEngines = engines.filter((engine) => engine.id !== id);
+    const updatedProjects = projects.filter(
+      (project) => project.engineId !== id
+    );
+    const updatedPages = pages.filter(
+      (page) =>
+        !updatedProjects.some((project) => project.id === page.projectId)
+    );
+    const updatedScenes = scenes.filter(
+      (scene) => !updatedPages.some((page) => page.id === scene.pageId)
+    );
+
+    setEngines(updatedEngines);
+    setProjects(updatedProjects);
+    setPages(updatedPages);
+    setScenes(updatedScenes);
+
+    Storage.set('engine', updatedEngines);
+    Storage.set('project', updatedProjects);
+    Storage.set('page', updatedPages);
+    Storage.set('scene', updatedScenes);
+
+    message.success('仓库及其子元素删除成功');
   };
 
-  const handleCopyLink = (link: string) => {
-    navigator.clipboard.writeText(link).then(() => {
-      message.success('链接已复制到剪贴板');
-    });
+  const handleDeleteProject = (id: number) => {
+    const updatedProjects = projects.filter((project) => project.id !== id);
+    const updatedPages = pages.filter((page) => page.projectId !== id);
+    const updatedScenes = scenes.filter(
+      (scene) => !updatedPages.some((page) => page.id === scene.pageId)
+    );
+
+    setProjects(updatedProjects);
+    setPages(updatedPages);
+    setScenes(updatedScenes);
+
+    Storage.set('project', updatedProjects);
+    Storage.set('page', updatedPages);
+    Storage.set('scene', updatedScenes);
+
+    message.success('项目及其子页面删除成功');
+  };
+
+  const handleDeletePage = (id: number) => {
+    const updatedPages = pages.filter((page) => page.id !== id);
+    const updatedScenes = scenes.filter((scene) => scene.pageId !== id);
+
+    setPages(updatedPages);
+    setScenes(updatedScenes);
+
+    Storage.set('page', updatedPages);
+    Storage.set('scene', updatedScenes);
+
+    message.success('页面及其场景删除成功');
   };
 
   const filteredProjects = projects?.filter(
@@ -201,7 +284,7 @@ const LinkManagementSystem: React.FC<LinkManagementSystemProps> = ({
   const filteredPages = pages?.filter(
     (page) => page.projectId === selectedProject
   );
-  const filteredScenes = scenes.filter(
+  const filteredScenes = scenes?.filter(
     (scene) => scene.pageId === selectedPage
   );
 
@@ -263,6 +346,22 @@ const LinkManagementSystem: React.FC<LinkManagementSystemProps> = ({
         return null;
     }
   };
+  const handleCopyLink = (link: string) => {
+    navigator.clipboard
+      .writeText(link)
+      .then(() => {
+        message.success('链接已复制到剪贴板');
+      })
+      .catch(() => {
+        message.error('复制失败');
+      });
+  };
+  const handleDeleteScene = (id: number) => {
+    const updatedScenes = scenes.filter((scene) => scene.id !== id);
+    setScenes(updatedScenes);
+    Storage.set('scene', updatedScenes);
+    message.success('场景删除成功');
+  };
 
   return (
     <Layout style={{ height: '100vh', overflow: 'auto' }}>
@@ -293,13 +392,36 @@ const LinkManagementSystem: React.FC<LinkManagementSystemProps> = ({
             新增仓库
           </Button>
         </div>
-        <Menu mode="inline" selectedKeys={[selectedEngine?.toString() || '']}>
+        <Menu
+          mode="inline"
+          selectedKeys={[selectedEngine?.toString() || '']}
+          onClick={(e) => handleEngineSelect(Number(e.key))}
+        >
           {engines.map((engine) => (
             <Menu.Item
               key={engine.id}
-              onClick={() => handleEngineSelect(engine.id)}
+              style={{
+                backgroundColor: selectedEngine === engine.id ? '#e6f7ff' : '',
+              }}
             >
               {engine.name}
+              <Button
+                icon={<DeleteOutlined />}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteEngine(engine.id);
+                }}
+                danger
+                style={{ marginLeft: '10px' }}
+              />
+              <Button
+                icon={<EditOutlined />}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEditItem('engine', engine);
+                }}
+                style={{ marginLeft: '10px' }}
+              />
             </Menu.Item>
           ))}
         </Menu>
@@ -344,10 +466,27 @@ const LinkManagementSystem: React.FC<LinkManagementSystemProps> = ({
                     style={{
                       cursor: 'pointer',
                       backgroundColor:
-                        selectedProject === project.id ? '#f0f0f0' : '#fff',
+                        selectedProject === project.id ? '#e6f7ff' : '',
                     }}
                   >
                     {project.name}
+                    <Button
+                      icon={<DeleteOutlined />}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteProject(project.id);
+                      }}
+                      danger
+                      style={{ marginLeft: '10px' }}
+                    />
+                    <Button
+                      icon={<EditOutlined />}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditItem('project', project);
+                      }}
+                      style={{ marginLeft: '10px' }}
+                    />
                   </List.Item>
                 )}
               />
@@ -381,10 +520,27 @@ const LinkManagementSystem: React.FC<LinkManagementSystemProps> = ({
                     style={{
                       cursor: 'pointer',
                       backgroundColor:
-                        selectedPage === page.id ? '#f0f0f0' : '#fff',
+                        selectedPage === page.id ? '#e6f7ff' : '',
                     }}
                   >
                     {page.name}
+                    <Button
+                      icon={<DeleteOutlined />}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeletePage(page.id);
+                      }}
+                      danger
+                      style={{ marginLeft: '10px' }}
+                    />
+                    <Button
+                      icon={<EditOutlined />}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditItem('page', page);
+                      }}
+                      style={{ marginLeft: '10px' }}
+                    />
                   </List.Item>
                 )}
               />
@@ -434,6 +590,11 @@ const LinkManagementSystem: React.FC<LinkManagementSystemProps> = ({
                       title={scene.name}
                       description={scene.link}
                     />
+                    <Button
+                      icon={<EditOutlined />}
+                      onClick={() => handleEditItem('scene', scene)}
+                      style={{ marginLeft: '10px' }}
+                    />
                   </List.Item>
                 )}
               />
@@ -443,7 +604,7 @@ const LinkManagementSystem: React.FC<LinkManagementSystemProps> = ({
       </Layout>
 
       <Modal
-        title="新增"
+        title={editItem ? `修改${modalType}` : `新增${modalType}`}
         visible={isModalVisible}
         onOk={handleModalOk}
         onCancel={handleModalCancel}
