@@ -58,6 +58,42 @@ const LinkManagementSystem = ({ dataSource }: LinkManagementSystemProps) => {
       name: '场景 3',
       link: 'https://example.com/page2/scene1',
     },
+    {
+      id: 1,
+      pageId: 1,
+      name: '场景 1',
+      link: 'https://example.com/page1/scene1',
+    },
+    {
+      id: 2,
+      pageId: 1,
+      name: '场景 2',
+      link: 'https://example.com/page1/scene2',
+    },
+    {
+      id: 3,
+      pageId: 2,
+      name: '场景 3',
+      link: 'https://example.com/page2/scene1',
+    },
+    {
+      id: 1,
+      pageId: 1,
+      name: '场景 1',
+      link: 'https://example.com/page1/scene1',
+    },
+    {
+      id: 2,
+      pageId: 1,
+      name: '场景 2',
+      link: 'https://example.com/page1/scene2',
+    },
+    {
+      id: 3,
+      pageId: 2,
+      name: '场景 3',
+      link: 'https://example.com/page2/scene1',
+    },
   ]);
 
   const [isModalVisible, setIsModalVisible] = useState(false);
