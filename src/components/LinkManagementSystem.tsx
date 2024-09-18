@@ -21,6 +21,7 @@ interface LinkManagementSystemProps {
 }
 
 const LinkManagementSystem = ({ dataSource }: LinkManagementSystemProps) => {
+  console.log(dataSource);
   const [selectedEngine, setSelectedEngine] = useState(null);
   const [selectedProject, setSelectedProject] = useState(null);
   const [engines, setEngines] = useState([
@@ -63,7 +64,7 @@ const LinkManagementSystem = ({ dataSource }: LinkManagementSystemProps) => {
   const [modalType, setModalType] = useState(null);
   const [form] = Form.useForm();
 
-  const handleEngineSelect = (engineId) => {
+  const handleEngineSelect = (engineId: number) => {
     setSelectedEngine(engineId);
     setSelectedProject(null);
   };
